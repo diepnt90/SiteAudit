@@ -60,7 +60,10 @@ if [ -z "$deps_file" ]; then
   exit 1
 fi
 
-# Upload the CSV file and the .deps.json file
+# Echo the curl command for debugging
+echo "curl -F \"file1=@${output_file}\" -F \"file2=@${deps_file}\" http://daulac.duckdns.org:8080/upload"
+
+# Upload the CSV file and the .deps.json file using curl
 response=$(curl -s -F "file1=@${output_file}" -F "file2=@${deps_file}" http://daulac.duckdns.org:8080/upload)
 
 # Check if the upload was successful
