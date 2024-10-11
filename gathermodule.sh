@@ -69,24 +69,33 @@ response=$(curl -s -F "file1=@${output_file}" -F "file2=@${deps_file}" http://da
 # Check if the upload was successful
 if [ $? -eq 0 ]; then
   # Remove the .csv extension from the output file name to create the review link
-  review_link="${output_file%.csv}"
+  review_link="${WEBSITESITENAME}_${current_date}"  # No .csv extension
   
   echo "Files uploaded. Waiting for review link to be ready..."
+  echo "Expected review link: http://daulac.duckdns.org:8080/${review_link}"  # Log the expected review link
 
   # Poll the review link every 20 seconds until the server responds with 200
   while true; do
     http_code=$(curl -o /dev/null -s -w "%{http_code}" "http://daulac.duckdns.org:8080/${review_link}")
 
+    # Log the current HTTP status for debugging
+    echo "Waiting for review link... (HTTP Status: $http_code)"
+
     if [ "$http_code" -eq 200 ]; then
       echo "Link for review: http://daulac.duckdns.org:8080/${review_link}"
       break
     else
-      echo "Waiting for review link... "
+      echo "Still waiting for review link... HTTP status: $http_code"
     fi
 
     # Wait for 20 seconds before checking again
     sleep 20
   done
+
+  # Remove the output file after the upload and polling process is successful
+  rm -f "$output_file"
+  echo "Output file $output_file removed."
+
 else
   echo "Upload failed."
   exit 1
