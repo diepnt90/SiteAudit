@@ -25,7 +25,7 @@ fi
 current_date=$(date +"%Y%m%d")
 
 # Define the CSV output file with WEBSITESITENAME and current date
-output_file="${WEBSITESITENAME}_${current_date}.csv"
+output_file="/root/${WEBSITESITENAME}_${current_date}.csv"
 
 # Create or overwrite the CSV file with headers
 echo "module_name,modified_date,current_version,newest_version,tag,links,notes" > "$output_file"
@@ -70,7 +70,23 @@ response=$(curl -s -F "file1=@${output_file}" -F "file2=@${deps_file}" http://da
 if [ $? -eq 0 ]; then
   # Remove the .csv extension from the output file name to create the review link
   review_link="${output_file%.csv}"
-  echo "Link for review: http://daulac.duckdns.org:8080/${review_link}"
+  
+  echo "Files uploaded. Waiting for review link to be ready..."
+
+  # Poll the review link every 20 seconds until the server responds with 200
+  while true; do
+    http_code=$(curl -o /dev/null -s -w "%{http_code}" "http://daulac.duckdns.org:8080/${review_link}")
+
+    if [ "$http_code" -eq 200 ]; then
+      echo "Link for review: http://daulac.duckdns.org:8080/${review_link}"
+      break
+    else
+      echo "Waiting for review link... (HTTP Status: $http_code)"
+    fi
+
+    # Wait for 20 seconds before checking again
+    sleep 20
+  done
 else
   echo "Upload failed."
   exit 1
