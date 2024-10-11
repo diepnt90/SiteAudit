@@ -85,7 +85,7 @@ if [ $? -eq 0 ]; then
       echo "Link for review: http://daulac.duckdns.org:8080/${review_link}"
       break
     else
-      echo "Still waiting for review link... HTTP status: $http_code"
+      echo "Still waiting for review link... "
     fi
 
     # Wait for 20 seconds before checking again
