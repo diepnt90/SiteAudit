@@ -219,7 +219,7 @@ Microsoft.Diagnostics.NETCore.Client.dll,,,https://api.nuget.org/v3-flatcontaine
 Microsoft.ApplicationInsights.Profiler.Logging.dll,,,https://api.nuget.org/v3-flatcontainer/microsoft.applicationinsights.profiler.core/index.json,,1
 Microsoft.ApplicationInsights.Profiler.HostingStartup30.dll,,,,,0
 Microsoft.AspNetCore.Razor.Language.dll,,,https://api.nuget.org/v3-flatcontainer/microsoft.aspnetcore.razor.language/index.json,,1
-Microsoft.EntityFrameworkCore.SqlServer.dll,,,https://api.nuget.org/v3/registration5-semver1/microsoft.entityframeworkcore.sqlserver/index.json,,1
+Microsoft.EntityFrameworkCore.SqlServer.dll,,,https://api.nuget.org/v3-flatcontainer/microsoft.entityframeworkcore.sqlserver/index.json,,1
 System.Runtime.Caching.dll,,,https://api.nuget.org/v3-flatcontainer/system.runtime.caching/index.json,,1
 Microsoft.AspNetCore.JsonPatch.dll,,,https://api.nuget.org/v3-flatcontainer/microsoft.aspnetcore.jsonpatch/index.json,,1
 System.ServiceModel.Duplex.dll,,,https://api.nuget.org/v3-flatcontainer/system.servicemodel.duplex/index.json,,1
