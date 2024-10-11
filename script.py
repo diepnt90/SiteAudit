@@ -4,6 +4,7 @@ import json
 import re
 import sys
 import requests
+import time
 
 # Function to get the current version from a .deps.json file
 def find_current_version(module_name, deps_file):
@@ -121,15 +122,30 @@ def update_newest_version_in_csv(csv_path):
     df.to_csv(csv_path, index=False)
     print(f"Updated newest_version in CSV: {csv_path}")
 
-# Function to find any .deps.json file in the given directory
-def find_deps_json(upload_dir):
-    for file in os.listdir(upload_dir):
-        if file.endswith('.deps.json'):
-            return os.path.join(upload_dir, file)
-    print("No .deps.json file found in the directory")
+# Function to download the CSV file from the provided GitHub URL with retry logic
+def download_csv_from_github(github_url, output_filename, retries=3, timeout=10):
+    print(f"Downloading CSV from {github_url}")
+    attempts = 0
+    while attempts < retries:
+        try:
+            response = requests.get(github_url, timeout=timeout)
+            if response.status_code == 200:
+                # Save the content to a file
+                with open(output_filename, 'wb') as f:
+                    f.write(response.content)
+                print(f"Downloaded CSV file to {output_filename}")
+                return
+            else:
+                print(f"Failed to download CSV (status code: {response.status_code}), retrying... ({attempts+1}/{retries})")
+        except requests.exceptions.RequestException as e:
+            print(f"Error downloading CSV: {e}, retrying... ({attempts+1}/{retries})")
+        attempts += 1
+        time.sleep(2)  # Optional delay between retries
+
+    print(f"Failed to download CSV after {retries} attempts.")
     sys.exit(1)
 
-# Function to update the CSV file by comparing it with another CSV file
+# Function to update the CSV file by comparing it with the downloaded CSV file
 def update_csv(first_csv_path, second_csv_path, output_dir):
     # Load the CSV files into pandas DataFrames
     df1 = pd.read_csv(first_csv_path)
@@ -162,15 +178,70 @@ def update_csv(first_csv_path, second_csv_path, output_dir):
     print(f"CSV file has been updated and moved to: {output_path}")
     return output_path
 
+# Final function to process the CSV after all updates (remove tag=0, prioritize notes, and sort)
+def finalize_csv(csv_path):
+    # Load the CSV file
+    df = pd.read_csv(csv_path)
+
+    # Remove rows where tag == 0
+    df = df[df['tag'] != 0]
+
+    # Ensure the 'notes' column is treated as strings, converting non-string values to an empty string if necessary
+    df['notes'] = df['notes'].fillna('').astype(str)
+
+    # Separate rows with non-empty 'notes'
+    notes_non_empty = df[df['notes'].str.strip() != '']
+
+    # Separate rows with empty 'notes' and sort by 'modified_date' in descending order
+    notes_empty = df[df['notes'].str.strip() == '']
+    notes_empty = notes_empty.sort_values(by='modified_date', ascending=False)
+
+    # Concatenate the two DataFrames: first with non-empty notes, then sorted empty notes
+    df_final = pd.concat([notes_non_empty, notes_empty])
+
+    # Save the finalized CSV
+    df_final.to_csv(csv_path, index=False)
+    print(f"Finalized CSV has been saved at: {csv_path}")
+
+# Move the final CSV to ~/outputcsv/
+def move_to_outputcsv(csv_path):
+    # Define the outputcsv directory
+    outputcsv_dir = os.path.expanduser('~/outputcsv')
+
+    # Ensure the directory exists
+    if not os.path.exists(outputcsv_dir):
+        os.makedirs(outputcsv_dir)
+
+    # Define the destination path
+    destination_path = os.path.join(outputcsv_dir, os.path.basename(csv_path))
+
+    # Move the file
+    os.rename(csv_path, destination_path)
+
+    print(f"CSV file has been moved to: {destination_path}")
+
+# Delete the deps.json file after processing
+def delete_deps_json(deps_file_path):
+    if os.path.exists(deps_file_path):
+        os.remove(deps_file_path)
+        print(f"Deleted deps.json file: {deps_file_path}")
+    else:
+        print(f"deps.json file not found: {deps_file_path}")
+
 if __name__ == '__main__':
     # Check if enough arguments are provided
     if len(sys.argv) != 3:
-        print("Usage: python script.py <path_to_1st_csv> <path_to_2nd_csv>")
+        print("Usage: python script.py <path_to_1st_csv> <path_to_deps.json>")
         sys.exit(1)
 
-    # Get CSV paths from command-line arguments
+    # Get CSV path and deps.json path from command-line arguments
     first_csv_path = sys.argv[1]
-    second_csv_path = sys.argv[2]
+    deps_file_path = sys.argv[2]
+
+    # Download second CSV from GitHub with retry logic
+    second_csv_path = "module.csv"
+    github_url = "https://raw.githubusercontent.com/diepnt90/SiteAudit/main/module.csv"
+    download_csv_from_github(github_url, second_csv_path)
 
     # Define the output directory (~/output)
     output_dir = os.path.expanduser('~/output')
@@ -178,12 +249,17 @@ if __name__ == '__main__':
     # Call the update_csv function
     updated_csv_path = update_csv(first_csv_path, second_csv_path, output_dir)
 
-    # Find the correct .deps.json file in the ~/upload directory
-    upload_dir = os.path.expanduser('~/upload')
-    deps_file_path = find_deps_json(upload_dir)
-
-    # Now, update the current_version using the found deps.json file
+    # Now, update the current_version using the provided deps.json file
     update_current_version_in_csv(updated_csv_path, deps_file_path)
 
-    # Finally, update the newest_version using the links in the CSV
+    # Update the newest_version using the links in the CSV
     update_newest_version_in_csv(updated_csv_path)
+
+    # Finalize the CSV (remove tag=0, prioritize notes, sort by modified date)
+    finalize_csv(updated_csv_path)
+
+    # Move the final CSV to ~/outputcsv/
+    move_to_outputcsv(updated_csv_path)
+
+    # Delete the deps.json file after all processing is done
+    delete_deps_json(deps_file_path)
