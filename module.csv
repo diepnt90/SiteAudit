@@ -226,7 +226,7 @@ System.ServiceModel.Duplex.dll,,,https://api.nuget.org/v3-flatcontainer/system.s
 System.Composition.AttributedModel.dll,,,https://api.nuget.org/v3-flatcontainer/system.composition.attributedmodel/index.json,,1
 Microsoft.AI.DependencyCollector.dll,,,https://api.nuget.org/v3-flatcontainer/microsoft.applicationinsights.dependencycollector/index.json,,1
 Microsoft.IdentityModel.Logging.dll,,,https://api.nuget.org/v3-flatcontainer/microsoft.identitymodel.logging/index.json,,1
-Microsoft.Data.SqlClient.dll,,,https://api.nuget.org/v3-flatcontainer/microsoft.data.sqlclient/index.json,,1
+Microsoft.Data.SqlClient.dll,,,https://api.nuget.org/v3-flatcontainer/microsoft.data.sqlclient/index.json,Bug in 5.2.0,1
 System.Threading.AccessControl.dll,,,https://api.nuget.org/v3-flatcontainer/system.threading.accesscontrol/index.json,,1
 System.Net.Http.Formatting.dll,,,,,0
 Microsoft.SqlServer.Server.dll,,,,,0
