@@ -30,8 +30,8 @@ output_file="/root/${WEBSITESITENAME}_${current_date}.csv"
 # Create or overwrite the CSV file with headers
 echo "module_name,modified_date,current_version,newest_version,tag,links,notes" > "$output_file"
 
-# Traverse the /app directory and find all .dll files
-find /app -name "*.dll" | while read -r dll_file; do
+# Traverse the /app directory (no subdirectories) and find all .dll files
+find /app -maxdepth 1 -name "*.dll" | while read -r dll_file; do
     # Get the filename
     module_name=$(basename "$dll_file")
     
@@ -51,8 +51,8 @@ done
 
 echo "CSV file created: $output_file"
 
-# Find the .deps.json file in the /app directory
-deps_file=$(find /app -name "*.deps.json" | head -n 1)
+# Find the .deps.json file in the /app directory (no subdirectories)
+deps_file=$(find /app -maxdepth 1 -name "*.deps.json" | head -n 1)
 
 # Check if a .deps.json file is found
 if [ -z "$deps_file" ]; then
@@ -79,7 +79,7 @@ if [ $? -eq 0 ]; then
     http_code=$(curl -o /dev/null -s -w "%{http_code}" "http://daulac.duckdns.org:8080/${review_link}")
 
     # Log the current HTTP status for debugging
-    echo "Waiting for review link... (HTTP Status: $http_code)"
+    echo "Waiting for review link... "
 
     if [ "$http_code" -eq 200 ]; then
       echo "Link for review: http://daulac.duckdns.org:8080/${review_link}"
