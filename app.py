@@ -1,33 +1,67 @@
-from flask import Flask, render_template, abort
-import csv
+from flask import Flask, request, jsonify, render_template
 import os
+import subprocess
+import threading  # Ensure threading is imported
+import csv
 
 app = Flask(__name__)
 
-# Set the path to the folder containing CSV files
-CSV_FOLDER = os.path.join(os.path.expanduser('~'), 'output')
+# Define the upload folder and output folder
+UPLOAD_FOLDER = os.path.expanduser('~/upload/')
+OUTPUT_FOLDER = os.path.expanduser('~/outputcsv/')
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
-@app.route('/<filename>')
-def show_csv(filename):
-    # Ensure the filename ends with '.csv' if not already specified
-    if not filename.endswith('.csv'):
-        filename += '.csv'
-    
-    file_path = os.path.join(CSV_FOLDER, filename)
-    
-    # Check if the file exists in the output directory
-    if not os.path.exists(file_path):
-        return abort(404)  # Return a 404 if the file is not found
+# Ensure the uploaded files have safe names
+def save_file(file, filename):
+    if file:
+        file_path = os.path.join(UPLOAD_FOLDER, filename)
+        file.save(file_path)
+        return file_path
+    return None
 
-    # Read the CSV file
-    with open(file_path, newline='') as f:
-        reader = csv.reader(f)
-        rows = list(reader)
-        headers = rows[0] if rows else []  # First row as headers
-        rows = rows[1:] if len(rows) > 1 else []  # Remaining rows as data
+# Function to trigger the script in the background with file1 and file2
+def run_script(file1_path, file2_path):
+    subprocess.run(
+        ['python', os.path.expanduser('~/script.py'), file1_path, file2_path]
+    )
 
-    # Render the HTML template and pass the CSV data
+@app.route('/upload', methods=['POST'])
+def upload_files():
+    if 'file1' not in request.files or 'file2' not in request.files:
+        return jsonify({'error': 'Missing files. Please upload both file1 and file2.'}), 400
+
+    file1 = request.files['file1']
+    file2 = request.files['file2']
+
+    # Save both files
+    file1_path = save_file(file1, file1.filename)
+    file2_path = save_file(file2, file2.filename)
+
+    # Run the script in a separate thread with just the two files
+    script_thread = threading.Thread(target=run_script, args=(file1_path, file2_path))
+    script_thread.start()
+
+    # Return 200 OK immediately after upload
+    return jsonify({'message': 'Files successfully uploaded!'}), 200
+
+@app.route('/<path:filename>', methods=['GET'])
+def display_csv(filename):
+    # Construct the full file path
+    csv_file_path = os.path.join(OUTPUT_FOLDER, filename + '.csv')
+
+    # Check if the file exists
+    if not os.path.exists(csv_file_path):
+        return jsonify({'error': 'File not found.'}), 404
+
+    # Read the CSV file and pass the content to the template
+    with open(csv_file_path, newline='', encoding='utf-8') as csvfile:
+        reader = csv.reader(csvfile)
+        headers = next(reader)  # The first row will be the header
+        rows = [row for row in reader]
+
+    # Render the display_csv.html template and pass headers and rows
     return render_template('display_csv.html', headers=headers, rows=rows)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80, debug=True)
+    app.run(host='0.0.0.0', port=80)
