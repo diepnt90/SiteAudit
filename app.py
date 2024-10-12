@@ -1,7 +1,7 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, redirect, url_for
 import os
 import subprocess
-import threading  # Ensure threading is imported
+import threading
 import csv
 
 app = Flask(__name__)
@@ -45,9 +45,9 @@ def upload_files():
     # Return 200 OK immediately after upload
     return jsonify({'message': 'Files successfully uploaded!'}), 200
 
-@app.route('/<path:filename>', methods=['GET'])
+@app.route('/<filename>', methods=['GET'])
 def display_csv(filename):
-    # Construct the full file path
+    # Construct the full file path (with .csv extension)
     csv_file_path = os.path.join(OUTPUT_FOLDER, filename + '.csv')
 
     # Check if the file exists
@@ -62,6 +62,15 @@ def display_csv(filename):
 
     # Render the display_csv.html template and pass headers and rows
     return render_template('display_csv.html', headers=headers, rows=rows)
+
+# Route for the homepage to list all CSV files in the output folder
+@app.route('/')
+def home():
+    # List all the CSV files in the output folder
+    csv_files = [f.replace('.csv', '') for f in os.listdir(OUTPUT_FOLDER) if f.endswith('.csv')]
+
+    # Render the homepage with the list of CSV files (without the .csv extension)
+    return render_template('homepage.html', files=csv_files)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=80)
