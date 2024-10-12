@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template, redirect, url_for
+from flask import Flask, request, jsonify, render_template
 import os
 import subprocess
 import threading
@@ -66,11 +66,20 @@ def display_csv(filename):
 # Route for the homepage to list all CSV files in the output folder
 @app.route('/')
 def home():
-    # List all the CSV files in the output folder
-    csv_files = [f.replace('.csv', '') for f in os.listdir(OUTPUT_FOLDER) if f.endswith('.csv')]
+    # List all the CSV files in the output folder and their modification times
+    csv_files = [
+        (f.replace('.csv', ''), os.path.getmtime(os.path.join(OUTPUT_FOLDER, f)))
+        for f in os.listdir(OUTPUT_FOLDER) if f.endswith('.csv')
+    ]
+    
+    # Sort files by modification time (newest first)
+    csv_files.sort(key=lambda x: x[1], reverse=True)
 
-    # Render the homepage with the list of CSV files (without the .csv extension)
-    return render_template('homepage.html', files=csv_files)
+    # Extract only the file names after sorting
+    sorted_files = [file[0] for file in csv_files]
+
+    # Render the homepage with the list of sorted CSV files (without the .csv extension)
+    return render_template('homepage.html', files=sorted_files)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80)
+    app.run(host='0.0.0.0', port=8080)
