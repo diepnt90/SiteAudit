@@ -708,7 +708,7 @@ DbLocalizationProvider.EPiServer.dll,,,,,0
 DbLocalizationProvider.AspNetCore.dll,,,,,0
 DbLocalizationProvider.AdminUI.AspNetCore.dll,,,,,0
 DbLocalizationProvider.AdminUI.Models.dll,,,,,0
-DbLocalizationProvider.dll,,,https://github.com/valdisiljuconoks/LocalizationProvider,,1
+DbLocalizationProvider.dll,,,https://github.com/valdisiljuconoks/LocalizationProvider,High DB on CMS due to duplicated key in the table. Fixed in version 8,1
 FluentValidation.DependencyInjectionExtensions.dll,,,,,0
 FluentValidation.AspNetCore.dll,,,https://api.nuget.org/v3-flatcontainer/fluentvalidation/index.json,,1
 FluentResults.dll,,,,,0
