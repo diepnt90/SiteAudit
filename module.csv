@@ -708,7 +708,7 @@ DbLocalizationProvider.EPiServer.dll,,,,,0
 DbLocalizationProvider.AspNetCore.dll,,,,,0
 DbLocalizationProvider.AdminUI.AspNetCore.dll,,,,,0
 DbLocalizationProvider.AdminUI.Models.dll,,,,,0
-DbLocalizationProvider.dll,,,https://api.nuget.org/v3-flatcontainer/localizationprovider.aspnetcore/index.json,,1
+DbLocalizationProvider.dll,,,https://api.nuget.org/v3-flatcontainer/localizationprovider.aspnetcore/index.json,Job high cpu in cms database. fixed in version 8,1
 FluentValidation.DependencyInjectionExtensions.dll,,,,,0
 FluentValidation.AspNetCore.dll,,,https://api.nuget.org/v3-flatcontainer/fluentvalidation/index.json,,1
 FluentResults.dll,,,,,0
