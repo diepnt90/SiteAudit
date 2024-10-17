@@ -1,4 +1,4 @@
-module_name,current_version,newest_version,links,notes,1
+module_name,current_version,newest_version,links,notes,tag
 Mogul.SeoManager.dll,,,https://nuget.optimizely.com/package/?id=Mogul.SEO.Manager.Package,,1
 Mogul.SeoManager.Commerce.dll,,,,,0
 EPiServer.Commerce.Azure.dll,,,https://nuget.optimizely.com/package/?id=EPiServer.Commerce.Azure,,1
